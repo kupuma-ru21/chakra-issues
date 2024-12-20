@@ -1,18 +1,28 @@
-/**
- * By default, Remix will handle hydrating your app on the client for you.
- * You are free to delete this file if you'd like to, but if you ever want it revealed again, you can run `npx remix reveal` ✨
- * For more information, see https://remix.run/file-conventions/entry.client
- */
-
 import { RemixBrowser } from "@remix-run/react";
-import { startTransition, StrictMode } from "react";
+import { StrictMode, startTransition } from "react";
 import { hydrateRoot } from "react-dom/client";
+import { ChakraProvider } from "./components/chakra-provider";
+import { ClientCacheProvider } from "./emotion/emotion-client";
 
-startTransition(() => {
-  hydrateRoot(
-    document,
-    <StrictMode>
-      <RemixBrowser />
-    </StrictMode>
-  );
-});
+const hydrate = () => {
+  startTransition(() => {
+    hydrateRoot(
+      document,
+      <StrictMode>
+        <ClientCacheProvider>
+          <ChakraProvider>
+            <RemixBrowser />
+          </ChakraProvider>
+        </ClientCacheProvider>
+      </StrictMode>
+    );
+  });
+};
+
+if (typeof requestIdleCallback === "function") {
+  requestIdleCallback(hydrate);
+} else {
+  // Safari doesn't support requestIdleCallback
+  // https://caniuse.com/requestidlecallback
+  setTimeout(hydrate, 1);
+}
